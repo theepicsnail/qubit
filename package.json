@@ -1,0 +1,15 @@
+{
+  "name": "qgame",
+  "version": "1.0.0",
+  "description": "",
+  "main": "numeric-1.2.6.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack-init": "^0.1.2",
+    "webpack-livereload-plugin": "^0.10.0"
+  }
+}

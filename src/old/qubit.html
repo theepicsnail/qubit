@@ -1,0 +1,53 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
+		<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<canvas id="render"></canvas>
+		<script>
+			const renderArea = document.getElementById("render");
+			renderArea.width = 400;
+			renderArea.height = 400;
+
+			const scene = new THREE.Scene();
+			const camera = new THREE.PerspectiveCamera( 75,
+				1, 0.1, 1000 );
+			controls = new THREE.OrbitControls( camera );
+
+			var renderer = new THREE.WebGLRenderer({canvas: renderArea});
+
+
+			// Spherical wireframe.
+			var edges = new THREE.EdgesGeometry(new THREE.SphereGeometry( 1, 8, 10 ));
+			var material = new THREE.LineBasicMaterial( {color: 0xffffff,linewidth: 1} );
+			scene.add( new THREE.LineSegments( edges, material ));
+
+			var cylinder = new THREE.CylinderGeometry(.1,.1,1);
+			var obj = new THREE.Mesh( cylinder, new THREE.MeshNormalMaterial());
+			obj.translateY(.5);
+			var group = new THREE.Group();
+			group.add(obj)
+			scene.add( group );
+
+
+
+			camera.position.z = 5;
+
+			var render = function () {
+				requestAnimationFrame( render );
+
+				group.rotation.x += 0.03;
+				group.rotation.z += 0.02;
+
+				renderer.render(scene, camera);
+			};
+
+			render();
+		</script>
+	</body>
+</html>

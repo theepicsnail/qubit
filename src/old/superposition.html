@@ -1,0 +1,74 @@
+<html>
+	<head>
+		<style>
+			td {
+				text-align: center;
+			}
+			table {
+				border: 1px solid;
+			}
+			td.bar {
+				width: 100px;
+			  border: 1px solid;
+			}
+			.filling {
+				background-color: #808080;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="output"></div>
+		<script>
+		function superposition() {
+
+
+				const table = document.createElement("table");
+
+				function createHeader(bits) {
+					let tr = document.createElement("tr");
+					for(var i = 0 ; i < bits ; i++) {
+						let td = document.createElement("td");
+						let btn = document.createElement("button");
+						btn.textContent = "Sort";
+						td.appendChild(btn);
+						tr.appendChild(td);
+					}
+
+					let td = document.createElement("td");
+					td.textContent = "%";
+					tr.appendChild(td);
+					return tr;
+				}
+
+				function createRow(bits, percent) {
+					let tr = document.createElement("tr");
+
+					for(var i = 0 ; i < bits.length ; i++) {
+						let td = document.createElement("td");
+						td.textContent = bits[i];
+						tr.appendChild(td);
+					}
+
+					let td = document.createElement("td");
+					td.classList.add("bar");
+					td.textContent = percent;
+					tr.appendChild(td);
+
+					let filling = document.createElement("div");
+					filling.style.width = percent + "%";
+					filling.style.height = "20px";
+					filling.classList.add("filling");
+					td.appendChild(filling);
+
+					return tr;
+				}
+
+				table.appendChild(createHeader(2));
+				table.appendChild(createRow([0,0],50));
+				table.appendChild(createRow([0,1],25));
+				table.appendChild(createRow([1,0],25));
+				table.appendChild(createRow([1,1],00));
+}
+		</script>
+	</body>
+</html>
