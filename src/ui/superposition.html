@@ -1,0 +1,123 @@
+<base href="https://cdn.rawgit.com/download/polymer-cdn/1.5.0/lib/">
+<script src="webcomponentsjs/webcomponents-lite.min.js"></script>
+<link rel="import" href="polymer/polymer.html">
+
+<dom-module id="sp-view">
+	<template>
+		<style>
+			:host {
+				display:inline-block;
+			}
+			tr {
+				border:1px solid black;
+			}
+			td {
+				text-align: center;
+				vertical-align: middle;
+			}
+			td.percent {
+				border:1px solid black;
+				width:100px;
+			}
+		</style>
+		<table>
+			<tr>
+				<template is="dom-repeat" items="{{columns}}">
+					<td>
+						<button on-click="setSort" sort-bit="{{item}}">Sort {{item}}</button>
+					</td>
+				</template>
+				<td class="percent">
+					<button on-click="setSort">Sort %</button>
+				</td>
+			</tr>
+			<template is="dom-repeat" items="{{rows}}" sort="{{sort}}">
+				<tr>
+					<template is="dom-repeat" items="{{item.bits}}">
+						<td>
+							{{item}}
+						</td>
+					</template>
+					<td class="percent">
+						{{item.percent}}
+						<div style="background:black; height:10px; width: {{item.percent}}%">
+
+						</div>
+					</td>
+				</tr>
+			</template>
+		</table>
+	</template>
+	<script>
+		function explode(num, bits) {
+			let out = [];
+			while(bits--) {
+				out.unshift(num&1);
+				num = num >> 1;
+			}
+			return out;
+		}
+
+		Polymer({
+			is:'sp-view',
+			properties: {
+				sp:Object,
+				sortBit: 0,
+				sortDir: '+',
+				columns: {computed:'computeColumns(sp)'},
+				rows:    {computed:'computeRows(sp)'},
+				sort:    {computed:'computeSort(sortBit, sortDir)'},
+			},
+			computeColumns(sp) {
+				if(sp == null) return [];
+				let bits = [];
+				let count = sp.bits;
+				while(count--) bits.push(count);
+				this.set('sortBit', bits[0]);
+				return bits;
+			},
+			computeRows(sp) {
+				if(sp == null) return [];
+				return sp.state.map((v,i)=>{
+					return {
+						bits: explode(i, sp.bits),
+						percent: Math.round(v*v*100)
+					}
+				});
+			},
+			setSort(evt) {
+				let bit = evt.srcElement.sortBit;
+				if(bit === undefined)
+					bit = 'percent';
+
+				if(bit == this.sortBit) {
+					this.set('sortDir', this.sortDir == '-' ? '+' : '-');
+				} else {
+					this.set('sortDir', '+');
+				}
+
+				this.set('sortBit', bit);
+			},
+			computeSort(sortBit, sortDir) {
+				console.log('compute', sortBit, sortDir);
+				const dir = sortDir == '+'?1:-1;
+				if(sortBit=='percent')
+					return function(row1, row2) {return (row1.percent - row2.percent)*dir;};
+				return function(row1, row2) {
+					// Check main bit first.
+					let a = row1.bits[sortBit];
+					let b = row2.bits[sortBit];
+					if(a!=b) return (a-b)*dir;
+					// Then sort by the rest.
+					for(var i = 0 ; i < row1.bits.length ; i++){
+						let a = row1.bits[i];
+						let b = row2.bits[i];
+						if(a!=b) return (a-b)*dir;
+					}
+					return 0;
+				};
+
+			}
+		});
+	</script>
+</dom-module>

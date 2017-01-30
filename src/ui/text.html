@@ -1,0 +1,105 @@
+<base href="https://cdn.rawgit.com/download/polymer-cdn/1.5.0/lib/">
+<script src="webcomponentsjs/webcomponents-lite.min.js"></script>
+<link rel="import" href="polymer/polymer.html">
+
+<dom-module id="q-editor">
+	<template>
+		<style>
+			textarea {
+				vertical-align: top;
+				height:75vh;
+				width:50vw;
+				display: inline;
+			}
+			div {
+				display: inline-block;
+			}
+			pre {font-family: Consolas,monospace}
+
+		</style>
+		<textarea id="src">
+; Use 2 bits
+bits 2
+
+; Split bit 0 into 50/50 0 and 1
+hadamard 0
+
+; Invert bit 1 if bit 0 is 1
+cnot 1 0
+
+; First measurement is 50/50 random.
+; Second measurement always matches the first.
+measure 1
+measure 0
+
+</textarea>
+		<div id="controls">
+			<button on-click="run">Go!</button>{{error}}
+			<br/>
+			<sp-view sp="{{sp}}"></sp-view>
+			<br />
+			<pre>
+				{{log}}
+			</pre>
+		</div>
+		<br />
+		<pre>
+;'s are comments
+bits N     ; set the number of bits in the system. Keep this low.
+not N      ; Invert bit N
+cnot T C   ; Invert the [T]arget bit if the [C]ontrol is 1.
+hadamard N ; Split into superposition 0->(0+1), 1->(0-1)
+measure N  ; Measure bit N
+		</pre>
+	</template>
+	<script>
+		Polymer({
+			is:'q-editor',
+			error: "",
+			log: "",
+			run() {
+				console.log("run");
+				let instructions = this.$.src.value.split("\n");
+
+				this.set("sp", null);
+				this.set("error", "");
+				this.set("log", "");
+
+				instructions.forEach((instr, lineNo) => {
+					if(this.error != "") return;
+					let parts = instr.split(/;/)[0].trim().split(/ +/);
+					this.evaluate(parts);
+
+					let sp = this.sp;
+					this.set("sp", null);
+					this.set("sp", sp);
+				});
+			},
+			evaluate(cmd) {
+				console.log("Running", cmd);
+				let errorStr = "Unknown Command: '" + cmd + "'";
+				// Empty lines, and lines that start with ; are skipped.
+				if(cmd.length == 0 || cmd[0]=='')
+					return;
+
+				let action = cmd.shift();
+				let args = cmd.map((v)=>parseInt(v));
+				switch(action) {
+					case 'bits':
+						return this.set("sp", new qubit.SuperPosition(args[0]));
+					case 'hadamard':
+						return this.sp.applyFunction(args, gates.hadamard);
+					case 'cnot':
+						return this.sp.applyFunction(args, gates.cnot);
+					case 'not':
+						return this.sp.applyFunction(args, gates.not);
+					case 'measure':
+						this.log += "\nMeasured: " + this.sp.measure(args[0]);
+						this.set("log", this.log);
+						return;
+				}
+				this.set("error", errorStr)
+			}
+		});
+	</script>
+</dom-module>
