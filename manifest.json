@@ -1,6 +1,6 @@
 {
-  "name": "qgame",
-  "short_name": "qgame",
+  "name": "qubit",
+  "short_name": "qubit",
   "start_url": "/",
   "display": "standalone"
 }
