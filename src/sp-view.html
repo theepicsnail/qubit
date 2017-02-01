@@ -1,0 +1,99 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+
+<dom-module id="sp-view">
+  <template>
+		<style>
+			.bit {
+				width: 20px;
+				display: inline-block;
+				text-align: center;
+			}
+			.percent {
+				display: inline-block;
+			}
+			iron-list {
+				width: 250px;
+			}
+		</style>
+		<paper-card>
+  		<div class="card-content">
+				<template is="dom-if" if="{{!sp.bits}}">
+					No Qubits.
+				</template>
+				<iron-list items="[[items]]" as="item">
+					<template>
+						<div>
+							<div class='percent'>
+								<span>{{item.percent}}%</span>
+							</div>
+							<template
+								is="dom-repeat"
+								items="[[bits(item.state, sp.bits)]]">
+								<span class='bit'>{{item}}</span>
+							</template>
+							<paper-progress value="{{item.percent}}"></paper-progress>
+			      </div>
+					</template>
+				</iron-list>
+			</div>
+		</paper-card>
+
+		<iron-list items="[[measurements]]" as="item">
+			<template>
+				<div>
+					<span>Measure({{item.bit}}) = {{item.result}}</span>
+				</div>
+			</template>
+		</iron-list>
+
+	</template>
+  <script>
+		function createSort(bit, reversed) {
+			const N = 1<<bit;
+			return (a,b) => {
+				if(reversed) [a,b]=[b,a];
+				const p = (a.state & N) - (b.state & N);
+				if(p) return p;
+				return a.state - b.state;
+			};
+		}
+
+		function createFilter(dropZeros) {
+			if(dropZeros) return (v)=>v.percent > 0;
+			return ()=>true;
+		}
+
+    Polymer({
+      is: 'sp-view',
+			properties: {
+				sp: Object, // {bits:Number, state:Array<Number>}
+				filter: Function,
+				sort: Function,
+				items: {
+					type: Array,
+					computed: 'generateList(sp,filter,sort)'
+				},
+			},
+			attached(){
+				this.set('filter', createFilter(true));
+				this.set('sort', createSort(2, false));
+			},
+			generateList(sp, filter, sort) {
+				if(sp === null) return [];
+				return sp.state.map((v,i)=>({state:i,percent:v*v*100}))
+									  	 .filter(filter)
+										   .sort(sort);
+			},
+			bits(val, nbits) {
+				var out = [];
+				for(var i = 0 ; i < nbits ; i++) {
+					out.unshift(val>>i&1);
+				}
+				return out;
+			}
+    });
+  </script>
+</dom-module>

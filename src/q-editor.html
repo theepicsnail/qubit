@@ -1,0 +1,56 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="q-editor">
+  <template>
+		<style>
+			#container {
+				display:flex;
+				flex-direction: column;
+				width: 100%;
+				height:100%;
+			}
+			textarea {
+				flex-grow: 1;
+			}
+		</style>
+		<div id='container'>
+			<textarea id='editor' value="{{program::input}}" placeholder="Program"></textarea>
+			<div hidden$="{{!error.length}}">{{error}}</div>
+		</div>
+	</template>
+  <script>
+    Polymer({
+      is: 'q-editor',
+			properties:{
+				program: {
+					type:String,
+					notify: true
+				},
+				error: {
+					type: String,
+					value: ""
+				}
+			},
+			highlightLine(lineNo) {
+				let lines = this.get('program').split("\n");
+				let content = undefined;
+				let start = 0;
+				let end = 0;
+
+				if(0 <= lineNo && lineNo < lines.length) {
+					for(let i = 0 ; i < lineNo ; i++) {
+						start += lines[i].length + 1;
+					}
+					content = lines[lineNo];
+					end = start + lines[lineNo].length;
+				}
+
+				this.$.editor.select();
+				this.$.editor.selectionStart = start;
+				this.$.editor.selectionEnd = end;
+
+				return content;
+			},
+    });
+  </script>
+</dom-module>

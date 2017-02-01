@@ -1,0 +1,62 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="q-computer.html" >
+
+<dom-module id="main-app">
+  <template>
+    <style>
+
+		q-computer {
+			height:100%;
+			width:100%;
+		}
+    </style>
+    <paper-drawer-panel id="drawerPanel" force-narrow>
+      <div class="nav" drawer="">
+				<paper-menu>
+					</iron-ajax>
+					<template is="dom-repeat" items="{{tutorials}}">
+						<paper-item on-tap='loadTutorial' tutorial-program={{item.program}}>
+							{{item.name}}
+						</paper-item>
+					</template>
+				</paper-menu>
+			</div>
+      <paper-header-panel class="main" main="" mode="waterfall">
+        <paper-toolbar>
+					<paper-icon-button icon="menu" paper-drawer-toggle=""></paper-icon-button>
+					<div class="title">Quantum Computer Simulator</div>
+        </paper-toolbar>
+
+					<!--<sp-view></sp-view>-->
+					<q-computer id="computer"></q-computer>
+
+      </paper-header-panel>
+    </paper-drawer-panel>
+
+
+		<iron-ajax url="tutorials.json" last-response="{{tutorials}}" auto
+			on-response='tutorialsLoaded'>
+	</template>
+
+  <script>
+    Polymer({
+      is: 'main-app',
+			tutorialsLoaded() {
+				this.$.computer.program = this.tutorials[0].program.join("\n");
+			},
+			loadTutorial(e){
+				this.$.computer.program = e.srcElement.tutorialProgram.join("\n");
+				this.$.drawerPanel.closeDrawer();
+			}
+    });
+  </script>
+</dom-module>

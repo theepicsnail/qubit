@@ -1,0 +1,98 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+
+<link rel="import" href="q-editor.html" >
+<link rel="import" href="sp-view.html" >
+<link rel="import" href="q-controls.html" >
+<link rel="import" href="q-simulator.html" />
+
+<dom-module id="q-computer">
+  <template>
+		<style>
+			#container {
+				display: flex;
+				flex-direction: row;
+				height: 100%;
+			}
+			paper-card {
+				display: flex;
+				width: 100%;
+				flex-direction: column;
+			}
+			.vfill {
+				height:100%;
+			}
+			q-editor {
+				width: 100%;
+			}
+		</style>
+		<div id="container" class="vfill">
+			<paper-card>
+				<div class="card-content vfill">
+					<q-editor
+						id="editor"
+						program='{{program}}'
+						error='{{error}}'
+						id='editor'
+						class="vfill"></q-editor>
+				</div>
+  			<div class="card-actions">
+					<q-controls id='controls' on-run='run' on-step='step'></q-controls>
+				</div>
+			</paper-card>
+
+			<sp-view id='view' sp={{sp}} measurements={{measurements}}></sp-view>
+		</div>
+		<q-simulator id='sim' sp={{sp}} measurements={{measurements}}></q-simulator>
+	</template>
+  <script>
+    Polymer({
+      is: 'q-computer',
+			properties: {
+				program: String,
+				error: String,
+				lineNo: {type:Number, value:0},
+				sp: Object,
+			},
+			reset() {
+				this.lineNo = 0;
+				this.set('error', '');
+				this.$.sim.reset();
+			},
+			run() {
+				while(this.run1());
+			},
+			step() {
+				if(this.run1()) {
+					if(this.get('error') !== '') {
+						this.lineNo --;
+					}
+				} else { 
+					this.run1();
+				}
+			},
+			run1() {
+				if(this.needsReset) {
+					this.reset();
+					this.needsReset = false;
+				}
+				const instr = this.$.editor.highlightLine(this.lineNo++);
+				if(instr === undefined) {
+					this.lineNo --;
+					this.needsReset = true;
+					return false
+				}
+
+				// "bits  1 ; a ; dfdf" -> ["bits", "1"]
+				// "   ;  test" -> [""]
+				const cmd = instr.split(/;/)[0].trim().split(/ +/);
+				if(cmd[0].length == 0)
+					return this.run1(); // Run the next line instead.
+
+				const error = this.$.sim.eval(cmd);
+				this.set('error', error);
+				return true;
+			}
+    });
+  </script>
+</dom-module>

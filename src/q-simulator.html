@@ -1,0 +1,55 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<script src='math.min.js'></script>
+<script src='gates.js'></script>
+<script src='superposition.js'></script>
+
+<dom-module id="q-simulator">
+  <template>
+	</template>
+  <script>
+    Polymer({
+      is: 'q-simulator',
+			properties: {
+				sp: {type:Object, value:null, notify:true},
+				measurements: {type:Array, value: [], notify: true}
+			},
+			reset() {
+				this.set('measurements', []);
+				this.set('sp', null);
+			},
+			eval(cmd) {
+				const name = cmd.shift();
+				const args = cmd.map((v)=>parseInt(v));
+
+				// bits is the only command that works without 'sp' being defined.
+				if (name == 'bits') {
+					this.set('sp', new SuperPosition(args));
+					return "";
+				}
+
+				const sp = this.get('sp');
+				if(sp === null)
+					return '"bits" must be the first instruction.'
+
+				// Measurement is a special non-gate instruction.
+				if (name == 'measure' || name == 'm') {
+					let result = sp.measure(args[0]);
+					this.push('measurements', {bit: args[0], result: result});
+				} else {
+					// Normal path: get a gate and run it.
+					const gate = gates[name];
+					if(!gate)
+						return `Unknown instruction: ${name} ` + cmd.join(" ");
+					if(args.length != gate.argc)
+						return `${name} expected ${gate.argc} argument(s). Got ${args.length}.`;
+					sp.applyFunction(args, gate.func);
+				}
+
+				this.set('sp', null);
+				this.set('sp', sp);
+				return "";
+			}
+    });
+  </script>
+</dom-module>
