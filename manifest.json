@@ -1,0 +1,6 @@
+{
+  "name": "qgame",
+  "short_name": "qgame",
+  "start_url": "/",
+  "display": "standalone"
+}
